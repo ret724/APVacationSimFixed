@@ -24,6 +24,7 @@ using Archipelago.MultiClient.Net.Packets;
 using Archipelago.MultiClient.Net.Models;
 using Oculus.Platform;
 using Viveport.Arcade;
+using Il2CppSystem.Reflection;
 
 namespace APVacationSim
 {
@@ -76,9 +77,9 @@ namespace APVacationSim
 
         static bool goalSent = false;
 
-        static Dictionary<string, string> objectLocations = new Dictionary<string, string>();
+        //static Dictionary<string, string> objectLocations = new Dictionary<string, string>();
 
-        static bool inAreaDoorLocks = false;
+        //static bool inAreaDoorLocks = false;
 
         public Main(IntPtr ptr) : base(ptr)
         {
@@ -386,8 +387,8 @@ namespace APVacationSim
                 hikingTrailMemories = (int)settings["forestGate"];
                 overlookMemories = (int)settings["mountainGate"];
                 finalMemories = (int)settings["finalGate"];
-                objectLocations = settings["objectLocations"].ToObject<Dictionary<string, string>>();
-                inAreaDoorLocks = (bool)settings["inAreaDoorLocks"];
+                //objectLocations = settings["objectLocations"].ToObject<Dictionary<string, string>>();
+                //inAreaDoorLocks = (bool)settings["inAreaDoorLocks"];
             }
             ScoutAllLocations();
         }
@@ -400,19 +401,20 @@ namespace APVacationSim
             {
                 _mainThreadActions.Enqueue(async () =>
                 {
+                    string player_name;
                     long ap_id = APSession.Locations.GetLocationIdFromName("Vacation Simulator", loc.name);
-                    LocationInfoPacket info = await APSession.Locations.ScoutLocationsAsync(ap_id);
-                    string item_name = APSession.Items.GetItemName(info.Locations[0].Item);
-                    string player_name = APSession.Players.GetPlayerName(info.Locations[0].Player);
-                    //BepInExLoader.log.LogMessage(loc.name + " has " + item_name);
-                    locations.Add(loc.name, new VSIMLocation(loc.name, ap_id, item_name, player_name, loc.in_game_id));
+                    Dictionary<long, ScoutedItemInfo> scoutdictionary;
+                    scoutdictionary = await APSession.Locations.ScoutLocationsAsync(ap_id);
+                    player_name = APSession.Players.GetPlayerName(scoutdictionary[0].Player);
+                    locations.Add(loc.name, new VSIMLocation(loc.name, ap_id, scoutdictionary[0].ItemName, player_name, loc.in_game_id));
                 });
             }
         }
 
         private static Dictionary<string, RawVSIMLocation> LoadLocationsFromFile()
         {
-            string locationsPath = Path.Combine(Environment.CurrentDirectory + "/BepInEx/plugins/APVacationSim/", "locations.json");
+            //string locationsPath = Path.Combine(Environment.CurrentDirectory + "/BepInEx/plugins/APVacationSim/", "locations.json");
+            string locationsPath = "H:/locations.json";
 
             if (!File.Exists(locationsPath))
                 throw new FileNotFoundException("Failed to load location data", locationsPath);

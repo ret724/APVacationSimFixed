@@ -13,37 +13,37 @@ namespace APVacationSim
     {
         public static void HandleNewItem(ReceivedItemsHelper item)
         {
-            if (item.PeekItemName() == "Camera")
+            if (item.PeekItem().ItemName == "Camera")
             {
                 //Debug.Log("Unlock 1");
                 Main.EnableCamera();
             }
-            if (item.PeekItemName() == "Vacation Beach Gate Unlock")
+            if (item.PeekItem().ItemName == "Vacation Beach Gate Unlock")
             {
                 //Debug.Log("Unlock 2");
                 Main.UnlockBeach();
             }
-            if (item.PeekItemName() == "Vacation Forest Gate Unlock")
+            if (item.PeekItem().ItemName == "Vacation Forest Gate Unlock")
             {
                 //Debug.Log("Unlock 3");
                 Main.UnlockForest();
             }
-            if (item.PeekItemName() == "Vacation Mountain Gate Unlock")
+            if (item.PeekItem().ItemName == "Vacation Mountain Gate Unlock")
             {
                 //Debug.Log("Unlock 4");
                 Main.UnlockMountain();
             }
-            if (item.PeekItemName() == "Memory (Vacation Beach)")
+            if (item.PeekItem().ItemName == "Memory (Vacation Beach)")
             {
                 //Debug.Log("Unlock 5");
                 Main.AddBeachMemory();
             }
-            if (item.PeekItemName() == "Memory (Vacation Forest)")
+            if (item.PeekItem().ItemName == "Memory (Vacation Forest)")
             {
                 //Debug.Log("Unlock 6");
                 Main.AddForestMemory();
             }
-            if (item.PeekItemName() == "Memory (Vacation Mountain)")
+            if (item.PeekItem().ItemName == "Memory (Vacation Mountain)")
             {
                 //Debug.Log("Unlock 7");
                 Main.AddMountainMemory();

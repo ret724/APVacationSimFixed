@@ -397,3 +397,20 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 APVacationSim.csproj
+/Assembly-CSharp.dll
+/BepInEx.Core.dll
+/BepInEx.IL2CPP.dll
+/Il2Cppmscorlib.dll
+/Newtonsoft.Json.dll
+/Oculus.Platform.dll
+/OwlchemyVR.dll
+/UnhollowerBaseLib.dll
+/UnhollowerRuntimeLib.dll
+/Unity.TextMeshPro.dll
+/UnityEngine.AudioModule.dll
+/UnityEngine.CoreModule.dll
+/UnityEngine.dll
+/UnityEngine.ImageConversionModule.dll
+/UnityEngine.UI.dll
+/Viveport.dll
+/0Harmony.dll
