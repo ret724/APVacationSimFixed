@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using BepInEx;
 
 namespace APVacationSim
 {
@@ -39,21 +40,22 @@ namespace APVacationSim
         public async void CheckLocations()
         {
             Dictionary<GoalData, bool> successful = new Dictionary<GoalData, bool>();
-            foreach(KeyValuePair<GoalData, bool> location in goalDatas)
+            foreach (KeyValuePair<GoalData, bool> location in goalDatas)
             {
                 if (!location.Value)
                 {
                     if (SceneManager.GetActiveScene().name != "TravelMuseum" && manager != null && GameObject.Find("Coconut_SaveManager").GetComponent<SaveStateManager>().saveStateIndex != -1 && manager.IsGoalCompleted(location.Key))
                     {
-                        //Debug.Log("HELP " + location.Key.name);
                         foreach (KeyValuePair<string, VSIMLocation> apLocation in allLocations)
                         {
                             if (apLocation.Value.in_game_id == location.Key.name)
                             {
-                                //Debug.Log("Location Completed - " + apLocation.Key);
                                 await Task.Run(() => session.Locations.CompleteLocationChecks(apLocation.Value.ap_id));
                                 successful.Add(location.Key, true);
                                 break;
+                            }
+                            else
+                            {
                             }
                         }
                     } else

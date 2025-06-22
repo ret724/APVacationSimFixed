@@ -275,10 +275,11 @@ namespace APVacationSim
 
             lock (_lock)
             {
-                if (_mainThreadActions.Count > 0)
+                if (_mainThreadActions.Count > 0 || !locationSetupComplete)
                 {
                     _mainThreadActions.Dequeue().Invoke();
-                } else
+                }
+                else
                 {
                     locationSetupComplete = true;
                 }
@@ -352,6 +353,7 @@ namespace APVacationSim
             catch (Exception e)
             {
                 result = new LoginFailure(e.GetBaseException().Message);
+                BepInExLoader.log.LogMessage("Login Failed");
             }
 
             if (!result.Successful)
@@ -373,7 +375,9 @@ namespace APVacationSim
             // Successfully connected, `ArchipelagoSession` (assume statically defined as `session` from now on) can now be used to interact with the server and the returned `LoginSuccessful` contains some useful information about the initial connection (e.g. a copy of the slot data as `loginSuccess.SlotData`)
             var loginSuccess = (LoginSuccessful)result;
 
+            BepInExLoader.log.LogMessage(loginSuccess.ToString());
             Debug.Log(loginSuccess.ToString());
+
 
             PullFromSlotData(loginSuccess);
         }
@@ -396,25 +400,34 @@ namespace APVacationSim
         private static void ScoutAllLocations()
         {
             var rawLocations = LoadLocationsFromFile();
-            BepInExLoader.log.LogMessage(rawLocations.Count);
+            long[] idArray = new long[rawLocations.Count];
+            int count = 0;
             foreach (RawVSIMLocation loc in rawLocations.Values)
             {
-                _mainThreadActions.Enqueue(async () =>
+                idArray[count] = APSession.Locations.GetLocationIdFromName("Vacation Simulator", loc.name);
+                count += 1;
+            }
+
+            _mainThreadActions.Enqueue(async () =>
+            {
+                Dictionary<long, ScoutedItemInfo> scoutdictionary;
+                scoutdictionary = await APSession.Locations.ScoutLocationsAsync(idArray);
+                int newCount = 0;
+                foreach (RawVSIMLocation loc in rawLocations.Values)
                 {
                     string player_name;
-                    long ap_id = APSession.Locations.GetLocationIdFromName("Vacation Simulator", loc.name);
-                    Dictionary<long, ScoutedItemInfo> scoutdictionary;
-                    scoutdictionary = await APSession.Locations.ScoutLocationsAsync(ap_id);
-                    player_name = APSession.Players.GetPlayerName(scoutdictionary[0].Player);
-                    locations.Add(loc.name, new VSIMLocation(loc.name, ap_id, scoutdictionary[0].ItemName, player_name, loc.in_game_id));
-                });
-            }
+                    player_name = APSession.Players.GetPlayerName(scoutdictionary[idArray[newCount]].Player);
+                    locations.Add(loc.name, new VSIMLocation(loc.name, idArray[newCount], scoutdictionary[idArray[newCount]].ItemName, player_name, loc.in_game_id));
+                    newCount += 1;
+                }
+                locationSetupComplete = true;
+            });
         }
 
         private static Dictionary<string, RawVSIMLocation> LoadLocationsFromFile()
         {
-            //string locationsPath = Path.Combine(Environment.CurrentDirectory + "/BepInEx/plugins/APVacationSim/", "locations.json");
-            string locationsPath = "H:/locations.json";
+            string locationsPath = Path.Combine(Environment.CurrentDirectory + "/BepInEx/plugins/APVacationSim/resources/", "locations.json");
+            //string locationsPath = "H:/locations.json";
 
             if (!File.Exists(locationsPath))
                 throw new FileNotFoundException("Failed to load location data", locationsPath);
