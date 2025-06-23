@@ -28,7 +28,7 @@ namespace APVacationSim
                     if (location.in_game_id == data.name)
                     {
                         goalDatas.Add(data, false);
-                        data.friendlyName = location.item_name + " for " + location.player_name;
+                        data.friendlyName = location.player_name + "'s " + location.item_name;
                         data.memoryBackgroundColor = Color.white;
                     }
                 }
