@@ -5,3 +5,6 @@
  Setup:
  Follow the instructions here: https://discord.com/channels/731205301247803413/1204935955580985414/1214052985899061249 (Archipelago Discord Server)
  But instead of using the APVacationSim mod from the message use the one from the Releases page here
+
+
+ also special thanks to Chandler05 for making the original mod and energymaster22 for doing most of the update.
