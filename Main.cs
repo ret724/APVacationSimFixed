@@ -275,13 +275,13 @@ namespace APVacationSim
 
             lock (_lock)
             {
-                if (_mainThreadActions.Count > 0 || !locationSetupComplete)
+                if (_mainThreadActions.Count > 0 && !locationSetupComplete)
                 {
                     _mainThreadActions.Dequeue().Invoke();
                 }
                 else
                 {
-                    locationSetupComplete = true;
+                    // locationSetupComplete = true;
                 }
             }
         }
@@ -347,7 +347,7 @@ namespace APVacationSim
 
             try
             {
-                result = APSession.TryConnectAndLogin("Vacation Simulator", user, Archipelago.MultiClient.Net.Enums.ItemsHandlingFlags.AllItems, new Version(0, 4, 4), password: pass);
+                result = APSession.TryConnectAndLogin("Vacation Simulator", user, Archipelago.MultiClient.Net.Enums.ItemsHandlingFlags.AllItems, new Version(0, 6, 7), password: pass);
                 // handle TryConnectAndLogin attempt here and save the returned object to `result`
             }
             catch (Exception e)
