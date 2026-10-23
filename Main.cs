@@ -25,6 +25,7 @@ using Archipelago.MultiClient.Net.Models;
 using Oculus.Platform;
 using Viveport.Arcade;
 using Il2CppSystem.Reflection;
+using System.Reflection;
 
 namespace APVacationSim
 {
@@ -97,7 +98,7 @@ namespace APVacationSim
             {
                 JObject o2 = (JObject)JToken.ReadFrom(reader);
 
-                APSession = ArchipelagoSessionFactory.CreateSession(o2.GetValue("port").ToString());
+                APSession = ArchipelagoSessionFactory.CreateSession(o2.GetValue("address:port").ToString());
 
                 APSession.Items.ItemReceived += ItemHandler.HandleNewItem;
 
@@ -105,7 +106,7 @@ namespace APVacationSim
                 ResetForestMemories();
                 ResetMountainMemories();
 
-                Connect(o2.GetValue("port").ToString(), o2.GetValue("slot_name").ToString(), o2.GetValue("password").ToString());
+                Connect(o2.GetValue("address:port").ToString(), o2.GetValue("slot_name").ToString(), o2.GetValue("password").ToString());
             }
         }
 
@@ -426,13 +427,32 @@ namespace APVacationSim
 
         private static Dictionary<string, RawVSIMLocation> LoadLocationsFromFile()
         {
-            string locationsPath = Path.Combine(Environment.CurrentDirectory + "/BepInEx/plugins/APVacationSim/resources/", "locations.json");
+            // string locationsPath = Path.Combine(Environment.CurrentDirectory + "/BepInEx/plugins/APVacationSim/resources/", "locations.json");
             //string locationsPath = "H:/locations.json";
 
-            if (!File.Exists(locationsPath))
-                throw new FileNotFoundException("Failed to load location data", locationsPath);
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
 
-            string json = File.ReadAllText(locationsPath);
+            string json;
+
+            using (System.IO.Stream stream = assembly.GetManifestResourceStream("APVacationSim.Assets.locations.json"))
+            {
+                if (stream == null)
+                {
+                    throw new FileNotFoundException($"Could not find embedded resource: APVacationSim.Assets.locations.json");
+                    //return;
+                }
+
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    json = reader.ReadToEnd();
+                    //BepInExLoader.log.LogMessage($"Loaded resource content: {fileContent}");
+                }
+            }
+
+            // if (!File.Exists(locationsPath))
+            //     throw new FileNotFoundException("Failed to load location data", locationsPath);
+
+            
             return JsonConvert.DeserializeObject<RawVSIMLocation[]>(json)
                 .ToDictionary(x => x.name, x => x);
         }
@@ -704,7 +724,30 @@ namespace APVacationSim
 
         private static Sprite LoadItemImage(string path)
         {
-            byte[] bytes = File.ReadAllBytes(path);
+            //byte[] bytes = File.ReadAllBytes(path);
+
+            byte[] bytes = null;
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+            using (System.IO.Stream stream = assembly.GetManifestResourceStream(path))
+            {
+                if (stream == null)
+                {
+                    // Log it natively so you can see exactly which path failed in your BepInEx console
+                    UnityEngine.Debug.LogError($"[APVacationSim] FAILED to find embedded resource at path: '{path}'");
+
+                    // Return an empty/transparent sprite instead of crashing your mod's static initializer
+                    var fallbackTex = new Texture2D(2, 2);
+                    return Sprite.Create(fallbackTex, new Rect(0, 0, 2, 2), new Vector2(0.5f, 0.5f));
+                }
+
+                using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
+                {
+                    stream.CopyTo(ms);
+                    bytes = ms.ToArray();
+                }
+            }
+
             var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
             ImageConversion.LoadImage(tex, bytes);
             tex.filterMode = FilterMode.Point;
@@ -724,7 +767,8 @@ namespace APVacationSim
         {
             if (apLogo == null)
             {
-                apLogo = LoadItemImage(Environment.CurrentDirectory + "/BepInEx/plugins/APVacationSim/resources/icon.png");
+                //apLogo = LoadItemImage(Environment.CurrentDirectory + "/BepInEx/plugins/APVacationSim/resources/icon.png");
+                apLogo = LoadItemImage("APVacationSim.Assets.icon.png");
             }
             if (__instance.rendererForSprite.sprite != apLogo) {
                 __instance.rendererForSprite.sprite = apLogo;
